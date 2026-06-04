@@ -1,36 +1,43 @@
+# cm-interview
 
-# Interviews
+## Prerequisites
+- Docker (Linux) or Docker Desktop with WSL2 backend (Windows/Mac)
+- [kind](https://kind.sigs.k8s.io/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Helm](https://helm.sh/)
 
-## This repo contains tasks we request interviewees to complete
+## Setup
 
-* This repository should be forked, candidates should work in their own forked versions.
-Please don't open pull requests with solutions agains this repository.
-* No tasks require the use of any paid services.
-* For all of the following tasks please use your favourite tools.
-* During the interview the interviewee guides us through
-their solution. Explaining decisions and technical concepts as we go.
-* Tasks can be solved in a very simplistic way or as complicated as you can imagine.
-Both can be valid.
+Create a local cluster:
+```bash
+kind create cluster --name interview
+```
 
-### k8s deployment
+Deploy the app:
+```bash
+helm install cm-interview ./k8s-deployment/chart
+```
 
-* please don't use cloud infra providers like AWS, GCP etc. The cluster should
-be a local one.
-  
-1. Set up a kubernetes cluster ie. kind, minikube, k3s etc.
-the one you like the most.
-2. Build and release an app. This application should have a dockerfile created
-by you and it should be built by you. This can be something very simple,
-ie traefik/whoami, hashicorp/http-echo, your own if you have one.
-Each release should happen automatically.
-3. Create a deployment of this app.
+Access it:
+```bash
+kubectl port-forward service/cm-interview 8080:8080 -n cm-interview
+```
+in another terminal:
+```bash
+curl http://localhost:8080
+```
 
-* extras: IaC, GitOps, semver, changelog
+## Releasing
 
-### review
+Tag a commit on main to trigger a new release:
+```bash
+git tag v1.x.x
+git push --tags
+```
+The pipeline builds the Docker image, pushes it to ghcr.io, and updates the image tag in `values.yaml`.
 
-* please review [shellscript](shell/script.sh)
-
-* please review [deployment](k8s/nginx.yaml)
-
-* extras: proper explanation
+## Stack
+- **kind** — local cluster, runs in Docker, no VM needed
+- **Helm** — templated K8s manifests, easy to configure per environment
+- **GitHub Actions** — builds and pushes on git tag, auto-updates values.yaml
+- **ghcr.io** — free container registry, no extra credentials needed
