@@ -33,7 +33,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
 
-
+      # would not work with branch protection rules, in real life would need to be using token with write permissions.
       - name: Update image tag in values.yaml
         run: |
           sed -i "s/tag: .*/tag: \"${{ github.ref_name }}\"/" k8s-deployment/chart/values.yaml
