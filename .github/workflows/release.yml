@@ -4,12 +4,15 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    if: github.event.base_ref == 'refs/heads/main'
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -29,3 +32,13 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+
+      # would not work with branch protection rules, in real life would need to be using token with write permissions.
+      - name: Update image tag in values.yaml
+        run: |
+          sed -i "s/tag: .*/tag: \"${{ github.ref_name }}\"/" k8s-deployment/chart/values.yaml
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add k8s-deployment/chart/values.yaml
+          git commit -m "chore: update image tag to ${{ github.ref_name }}"
+          git push origin HEAD:main

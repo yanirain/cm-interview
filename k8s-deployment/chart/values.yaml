@@ -1,0 +1,21 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/yanirain/cm-interview
+  tag: "v1.0.0"
+  pullPolicy: IfNotPresent
+
+namespace: cm-interview
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 5678
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
